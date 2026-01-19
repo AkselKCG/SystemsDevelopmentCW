@@ -13,32 +13,40 @@ def get_conn() -> sqlite3.Connection:
 
 def init_db() -> None:
     with get_conn() as conn:
-        conn.execute(
+        conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
                 role TEXT NOT NULL
-            )
-            """
-        )
+            );
 
-        conn.execute(
-            """
             CREATE TABLE IF NOT EXISTS services (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 duration_minutes INTEGER NOT NULL,
                 price_gbp REAL NOT NULL
-            )
+            );
+
+            CREATE TABLE IF NOT EXISTS appointments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                patient_name TEXT NOT NULL,
+                scheduled_at TEXT NOT NULL,
+                service_id INTEGER NOT NULL,
+                created_by_user_id INTEGER NOT NULL,
+                FOREIGN KEY (service_id) REFERENCES services(id),
+                FOREIGN KEY (created_by_user_id) REFERENCES users(id)
+            );
             """
         )
-
         conn.commit()
 
 
+# ---------- USERS (AUTH) ----------
+
 def ensure_admin_user(email: str, password_hash: str) -> None:
+    email = email.strip().lower()
     with get_conn() as conn:
         row = conn.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
         if row:
@@ -51,6 +59,7 @@ def ensure_admin_user(email: str, password_hash: str) -> None:
 
 
 def get_user_by_email(email: str) -> dict[str, Any] | None:
+    email = email.strip().lower()
     with get_conn() as conn:
         row = conn.execute(
             "SELECT id, email, password_hash, role FROM users WHERE email = ?",
@@ -58,6 +67,8 @@ def get_user_by_email(email: str) -> dict[str, Any] | None:
         ).fetchone()
         return dict(row) if row else None
 
+
+# ---------- SERVICES ----------
 
 def list_services() -> list[dict[str, Any]]:
     with get_conn() as conn:
@@ -103,3 +114,50 @@ def delete_service(service_id: int) -> None:
     with get_conn() as conn:
         conn.execute("DELETE FROM services WHERE id = ?", (service_id,))
         conn.commit()
+
+
+# ---------- APPOINTMENTS ----------
+
+def create_appointment(
+    patient_name: str,
+    scheduled_at: str,
+    service_id: int,
+    user_id: int,
+) -> int:
+    with get_conn() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO appointments
+            (patient_name, scheduled_at, service_id, created_by_user_id)
+            VALUES (?, ?, ?, ?)
+            """,
+            (patient_name, scheduled_at, service_id, user_id),
+        )
+        conn.commit()
+        return int(cur.lastrowid)
+
+
+def list_appointments_for_user(user_id: int, is_admin: bool) -> list[dict[str, Any]]:
+    with get_conn() as conn:
+        if is_admin:
+            rows = conn.execute(
+                """
+                SELECT a.id, a.patient_name, a.scheduled_at, s.name AS service_name
+                FROM appointments a
+                JOIN services s ON a.service_id = s.id
+                ORDER BY a.id DESC
+                """
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT a.id, a.patient_name, a.scheduled_at, s.name AS service_name
+                FROM appointments a
+                JOIN services s ON a.service_id = s.id
+                WHERE a.created_by_user_id = ?
+                ORDER BY a.id DESC
+                """,
+                (user_id,),
+            ).fetchall()
+
+        return [dict(r) for r in rows]
