@@ -2,5 +2,17 @@
 
 {% block content %}
 <h2>Services</h2>
-<p>Clinic services page.</p>
+
+<p><a href="/services/new">Add a service</a></p>
+
+{% if services and services|length > 0 %}
+<ul>
+  {% for s in services %}
+    <li>{{ s.name }} ({{ s.duration_minutes }} mins, £{{ '%.2f'|format(s.price_gbp) }})</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No services yet.</p>
+{% endif %}
+
 {% endblock %}

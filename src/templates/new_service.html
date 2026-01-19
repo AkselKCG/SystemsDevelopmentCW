@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>New service</h2>
+
+{% if error %}
+<p><strong>{{ error }}</strong></p>
+{% endif %}
+
+<form method="post">
+  <p>
+    <label>Name<br>
+      <input type="text" name="name">
+    </label>
+  </p>
+
+  <p>
+    <label>Duration minutes<br>
+      <input type="number" name="duration_minutes" min="1">
+    </label>
+  </p>
+
+  <p>
+    <label>Price GBP<br>
+      <input type="number" name="price_gbp" step="0.01" min="0">
+    </label>
+  </p>
+
+  <p>
+    <button type="submit">Create</button>
+    <a href="/services">Cancel</a>
+  </p>
+</form>
+{% endblock %}
