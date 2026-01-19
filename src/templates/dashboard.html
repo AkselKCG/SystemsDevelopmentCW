@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<p>Welcome to the clinic booking dashboard.</p>
+<h2>Dashboard</h2>
+
+{% if session.get("user_id") %}
+<p>Use the navigation to manage services and appointments.</p>
+{% else %}
+<p>Please login to access services and appointments.</p>
+{% endif %}
+
 {% endblock %}

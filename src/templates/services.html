@@ -3,7 +3,9 @@
 {% block content %}
 <h2>Services</h2>
 
+{% if session.get("role") == "admin" %}
 <p><a href="/services/new">Add a service</a></p>
+{% endif %}
 
 {% if services and services|length > 0 %}
 <ul>
@@ -11,10 +13,13 @@
     <li>
       <strong>{{ s.name }}</strong>
       ({{ s.duration_minutes }} mins, £{{ '%.2f'|format(s.price_gbp) }})
-      <a href="/services/{{ s.id }}/edit">Edit</a>
-      <form method="post" action="/services/{{ s.id }}/delete" style="display:inline;">
-        <button type="submit">Delete</button>
-      </form>
+
+      {% if session.get("role") == "admin" %}
+        <a href="/services/{{ s.id }}/edit">Edit</a>
+        <form method="post" action="/services/{{ s.id }}/delete" style="display:inline;">
+          <button type="submit">Delete</button>
+        </form>
+      {% endif %}
     </li>
   {% endfor %}
 </ul>

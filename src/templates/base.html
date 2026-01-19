@@ -8,13 +8,27 @@
     <h1>Clinic Booking System</h1>
 
     <nav>
-        <a href="/">Dashboard</a> |
-        <a href="/services">Services</a> |
-        <a href="/appointments">Appointments</a> |
-        <a href="/api/health">API health</a> |
-        <a href="/login">Login</a> |
-        <a href="/logout">Logout</a>
+        <a href="/">Dashboard</a>
+
+        {% if session.get("user_id") %}
+            | <a href="/appointments">Appointments</a>
+            | <a href="/services">Services</a>
+            | <a href="/api/health">API health</a>
+            | <a href="/logout">Logout</a>
+        {% else %}
+            | <a href="/api/health">API health</a>
+            | <a href="/login">Login</a>
+        {% endif %}
     </nav>
+
+    {% if session.get("user_id") %}
+        <p>
+            Signed in as {{ session.get("email") }}
+            {% if session.get("role") %}
+                ({{ session.get("role") }})
+            {% endif %}
+        </p>
+    {% endif %}
 
     <hr>
 
