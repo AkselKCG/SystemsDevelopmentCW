@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
@@ -13,6 +13,11 @@ def appointments():
 @app.route("/services")
 def services():
     return render_template("services.html")
+
+@app.route("/api/health")
+def api_health():
+    return jsonify(status="ok")
+
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
