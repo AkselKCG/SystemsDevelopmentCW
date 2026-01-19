@@ -15,6 +15,17 @@ def init_db() -> None:
     with get_conn() as conn:
         conn.execute(
             """
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                role TEXT NOT NULL
+            )
+            """
+        )
+
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS services (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
@@ -23,7 +34,29 @@ def init_db() -> None:
             )
             """
         )
+
         conn.commit()
+
+
+def ensure_admin_user(email: str, password_hash: str) -> None:
+    with get_conn() as conn:
+        row = conn.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
+        if row:
+            return
+        conn.execute(
+            "INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)",
+            (email, password_hash, "admin"),
+        )
+        conn.commit()
+
+
+def get_user_by_email(email: str) -> dict[str, Any] | None:
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT id, email, password_hash, role FROM users WHERE email = ?",
+            (email,),
+        ).fetchone()
+        return dict(row) if row else None
 
 
 def list_services() -> list[dict[str, Any]]:
