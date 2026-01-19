@@ -8,7 +8,14 @@
 {% if services and services|length > 0 %}
 <ul>
   {% for s in services %}
-    <li>{{ s.name }} ({{ s.duration_minutes }} mins, £{{ '%.2f'|format(s.price_gbp) }})</li>
+    <li>
+      <strong>{{ s.name }}</strong>
+      ({{ s.duration_minutes }} mins, £{{ '%.2f'|format(s.price_gbp) }})
+      <a href="/services/{{ s.id }}/edit">Edit</a>
+      <form method="post" action="/services/{{ s.id }}/delete" style="display:inline;">
+        <button type="submit">Delete</button>
+      </form>
+    </li>
   {% endfor %}
 </ul>
 {% else %}

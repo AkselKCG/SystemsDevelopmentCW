@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>New service</h2>
+<h2>Edit service</h2>
 
 {% if error %}
 <p><strong>{{ error }}</strong></p>
@@ -10,24 +10,24 @@
 <form method="post">
   <p>
     <label>Name<br>
-      <input type="text" name="name" required>
+      <input type="text" name="name" value="{{ service.name }}" required>
     </label>
   </p>
 
   <p>
     <label>Duration minutes<br>
-      <input type="number" name="duration_minutes" min="1" required>
+      <input type="number" name="duration_minutes" min="1" value="{{ service.duration_minutes }}" required>
     </label>
   </p>
 
   <p>
     <label>Price GBP<br>
-      <input type="number" name="price_gbp" step="0.01" min="0" required>
+      <input type="number" name="price_gbp" step="0.01" min="0" value="{{ service.price_gbp }}" required>
     </label>
   </p>
 
   <p>
-    <button type="submit">Create</button>
+    <button type="submit">Save</button>
     <a href="/services">Cancel</a>
   </p>
 </form>
